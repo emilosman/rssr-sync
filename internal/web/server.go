@@ -1,46 +1,66 @@
 package web
 
-type Data struct {
-	ts     int64
-	apiKey string
-	body   []byte
+type Lists struct {
+	listIndex map[string]*List
 }
 
-func (d *Data) GetData(ts int64) ([]byte, error) {
-	if d.ts > ts {
-		return d.body, nil
+type List struct {
+	Ts     int64
+	ApiKey string
+	Data   []byte
+}
+
+func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
+	l := ls.findList(apiKey)
+
+	if l.Ts < ts {
+		return nil, ErrOldTimestamp
 	}
-	return nil, ErrOldTimestamp
+
+	return l.Data, nil
 }
 
-func (d *Data) SetData(data []byte, ts int64) error {
-	err := d.setTimestamp(ts)
+func (ls *Lists) SetData(apiKey string, data []byte, ts int64) error {
+	l := ls.findList(apiKey)
+
+	err := l.setTimestamp(ts)
 	if err != nil {
 		return err
 	}
 
-	err = d.setBody(data)
+	err = l.setData(data)
 	if err != nil {
 		return err
 	}
 
-	return d.Save()
+	return l.Save()
 }
 
-func (d *Data) Save() error {
+func (l *List) Save() error {
 	// write to disk
 	return nil
 }
 
-func (d *Data) setTimestamp(ts int64) error {
-	if d.ts < ts {
-		d.ts = ts
+func (ls *Lists) findList(apiKey string) *List {
+	l := ls.listIndex[apiKey]
+	if l == nil {
+		l := &List{
+			ApiKey: apiKey,
+		}
+		ls.listIndex[apiKey] = l
+	}
+	return l
+}
+
+func (l *List) setTimestamp(ts int64) error {
+	if l.Ts < ts {
+		l.Ts = ts
 		return nil
 	}
 	return ErrOldTimestamp
 }
 
-func (d *Data) setBody(data []byte) error {
-	d.body = data
+func (l *List) setData(data []byte) error {
+	l.Data = data
 	return nil
 }
