@@ -43,7 +43,7 @@ func (ls *Lists) SetData(apiKey string, data []byte, ts int64) error {
 }
 
 func (l *List) Save() error {
-	// write to disk
+	// write to disk with API key filename
 	return nil
 }
 
