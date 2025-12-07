@@ -11,7 +11,10 @@ type List struct {
 }
 
 func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
-	l := ls.findList(apiKey)
+	l, err := ls.findList(apiKey)
+	if err != nil {
+		return nil, err
+	}
 
 	if l.Ts < ts {
 		return nil, ErrOldTimestamp
@@ -21,9 +24,12 @@ func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
 }
 
 func (ls *Lists) SetData(apiKey string, data []byte, ts int64) error {
-	l := ls.findList(apiKey)
+	l, err := ls.findList(apiKey)
+	if err != nil {
+		return err
+	}
 
-	err := l.setTimestamp(ts)
+	err = l.setTimestamp(ts)
 	if err != nil {
 		return err
 	}
@@ -41,7 +47,11 @@ func (l *List) Save() error {
 	return nil
 }
 
-func (ls *Lists) findList(apiKey string) *List {
+func (ls *Lists) findList(apiKey string) (*List, error) {
+	if apiKey == "" {
+		return nil, ErrNoApiKey
+	}
+
 	l := ls.listIndex[apiKey]
 	if l == nil {
 		l := &List{
@@ -49,7 +59,7 @@ func (ls *Lists) findList(apiKey string) *List {
 		}
 		ls.listIndex[apiKey] = l
 	}
-	return l
+	return l, nil
 }
 
 func (l *List) setTimestamp(ts int64) error {
