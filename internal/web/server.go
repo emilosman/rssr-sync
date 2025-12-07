@@ -1,76 +1,56 @@
 package web
 
-type Lists struct {
-	listIndex map[string]*List
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+
+	"github.com/emilosman/rssr-sync/internal/data"
+)
+
+type dataRequest struct {
+	ApiKey string `json:"apiKey"`
+	Ts     int64  `json:"ts"`
 }
 
-type List struct {
-	Ts     int64
-	ApiKey string
-	Data   []byte
+type dataResponse struct {
+	Data string `json:"data"`
 }
 
-func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
-	l, err := ls.findList(apiKey)
-	if err != nil {
-		return nil, err
-	}
+func Server(lists *data.Lists) http.Handler {
+	mux := http.NewServeMux()
 
-	if l.Ts < ts {
-		return nil, ErrOldTimestamp
-	}
-
-	return l.Data, nil
-}
-
-func (ls *Lists) SetData(apiKey string, data []byte, ts int64) error {
-	l, err := ls.findList(apiKey)
-	if err != nil {
-		return err
-	}
-
-	err = l.setTimestamp(ts)
-	if err != nil {
-		return err
-	}
-
-	err = l.setData(data)
-	if err != nil {
-		return err
-	}
-
-	return l.Save()
-}
-
-func (l *List) Save() error {
-	// write to disk with API key filename
-	return nil
-}
-
-func (ls *Lists) findList(apiKey string) (*List, error) {
-	if apiKey == "" {
-		return nil, ErrNoApiKey
-	}
-
-	l := ls.listIndex[apiKey]
-	if l == nil {
-		l := &List{
-			ApiKey: apiKey,
+	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
 		}
-		ls.listIndex[apiKey] = l
-	}
-	return l, nil
-}
 
-func (l *List) setTimestamp(ts int64) error {
-	if l.Ts < ts {
-		l.Ts = ts
-		return nil
-	}
-	return ErrOldTimestamp
-}
+		var req dataRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "invalid JSON body", http.StatusBadRequest)
+			return
+		}
 
-func (l *List) setData(data []byte) error {
-	l.Data = data
-	return nil
+		if req.ApiKey == "" {
+			http.Error(w, "apiKey is required", http.StatusBadRequest)
+			return
+		}
+
+		result, err := lists.GetList(req.ApiKey, req.Ts)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrOldTimestamp):
+				http.Error(w, err.Error(), http.StatusConflict)
+			default:
+				http.Error(w, err.Error(), http.StatusNotFound)
+			}
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(dataResponse{Data: string(result)})
+	})
+
+	return mux
 }

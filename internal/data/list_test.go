@@ -1,8 +1,8 @@
-package web
+package data
 
 import "testing"
 
-func TestServer(t *testing.T) {
+func TestData(t *testing.T) {
 	t.Run("gets timestamp", func(t *testing.T) {
 
 	})
