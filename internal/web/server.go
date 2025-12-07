@@ -6,25 +6,14 @@ type Data struct {
 	body   []byte
 }
 
-func (d *Data) setTimestamp(ts int64) error {
-	if d.ts < ts {
-		d.ts = ts
-		return nil
+func (d *Data) GetData(ts int64) ([]byte, error) {
+	if d.ts > ts {
+		return d.body, nil
 	}
-	return ErrOldTimestamp
+	return nil, ErrOldTimestamp
 }
 
-func (d *Data) setBody(data []byte) error {
-	d.body = data
-	return nil
-}
-
-func (d *Data) Save() error {
-	// write to disk
-	return nil
-}
-
-func (d *Data) UpdateData(data []byte, ts int64) error {
+func (d *Data) SetData(data []byte, ts int64) error {
 	err := d.setTimestamp(ts)
 	if err != nil {
 		return err
@@ -36,4 +25,22 @@ func (d *Data) UpdateData(data []byte, ts int64) error {
 	}
 
 	return d.Save()
+}
+
+func (d *Data) Save() error {
+	// write to disk
+	return nil
+}
+
+func (d *Data) setTimestamp(ts int64) error {
+	if d.ts < ts {
+		d.ts = ts
+		return nil
+	}
+	return ErrOldTimestamp
+}
+
+func (d *Data) setBody(data []byte) error {
+	d.body = data
+	return nil
 }
