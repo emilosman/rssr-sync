@@ -17,7 +17,7 @@ func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
 	}
 
 	if l.Ts > ts {
-		return nil, ErrOldTimestamp
+		return l.Data, ErrdClientOldTimestampUpdate
 	}
 
 	return l.Data, nil
