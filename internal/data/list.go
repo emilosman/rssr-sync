@@ -5,46 +5,39 @@ type Lists struct {
 }
 
 type List struct {
-	Ts     int64
-	ApiKey string
-	Data   []byte
+	ItemIndex map[string]*Item
+	ApiKey    string
 }
 
-func (ls *Lists) GetList(apiKey string, ts int64) ([]byte, error) {
-	l, err := ls.findList(apiKey)
+type Item struct {
+	Ts       int64
+	GUID     string
+	Read     bool
+	Bookmark bool
+}
+
+func (ls *Lists) SyncList(list *List) (*List, error) {
+	l, err := ls.findList(list.ApiKey)
 	if err != nil {
 		return nil, err
 	}
 
-	if l.Ts > ts {
-		return l.Data, ErrdClientOldTimestampUpdate
+	if l.ItemIndex == nil {
+		l.ItemIndex = make(map[string]*Item)
 	}
 
-	return l.Data, nil
-}
-
-func (ls *Lists) SetData(apiKey string, data []byte, ts int64) error {
-	l, err := ls.findList(apiKey)
-	if err != nil {
-		return err
+	for guid, item := range list.ItemIndex {
+		if existing, ok := l.ItemIndex[guid]; ok {
+			if existing.Ts < item.Ts {
+				newItem := *item
+				l.ItemIndex[guid] = &newItem
+			}
+		} else {
+			l.ItemIndex[guid] = item
+		}
 	}
 
-	err = l.setTimestamp(ts)
-	if err != nil {
-		return err
-	}
-
-	err = l.setData(data)
-	if err != nil {
-		return err
-	}
-
-	return l.Save()
-}
-
-func (l *List) Save() error {
-	// write to disk with API key filename
-	return nil
+	return l, nil
 }
 
 func (ls *Lists) findList(apiKey string) (*List, error) {
@@ -52,25 +45,23 @@ func (ls *Lists) findList(apiKey string) (*List, error) {
 		return nil, ErrNoApiKey
 	}
 
+	if ls.ListIndex == nil {
+		ls.ListIndex = make(map[string]*List)
+	}
+
 	l := ls.ListIndex[apiKey]
 	if l == nil {
-		l := &List{
-			ApiKey: apiKey,
+		l = &List{
+			ApiKey:    apiKey,
+			ItemIndex: make(map[string]*Item),
 		}
 		ls.ListIndex[apiKey] = l
 	}
+
 	return l, nil
 }
 
-func (l *List) setTimestamp(ts int64) error {
-	if l.Ts < ts {
-		l.Ts = ts
-		return nil
-	}
-	return ErrOldTimestamp
-}
-
-func (l *List) setData(data []byte) error {
-	l.Data = data
+func (l *List) Save() error {
+	// write to disk with API key filename
 	return nil
 }
