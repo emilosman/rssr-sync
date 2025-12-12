@@ -34,8 +34,6 @@ func (ls *Lists) SyncList(list *List) (*List, error) {
 				slog.Info("Update", "i", existing)
 				newItem := *item
 				l.ItemIndex[guid] = &newItem
-			} else {
-				slog.Info("Skip", "i", item)
 			}
 		} else {
 			slog.Info("Create", "i", item)
