@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	ls := data.LoadLists()
+	ls := data.Load()
 	fmt.Println("Server running on port 8080")
 	http.ListenAndServe(":8080", web.Server(ls))
 }

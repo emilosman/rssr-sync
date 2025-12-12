@@ -1,5 +1,6 @@
 # TODO
+- [ ] save data file to disk with apiKey prefix
+- [ ] concurrency race condition protection
 - [ ] testdata: data.json from rssr
 - [ ] server_test httptest
-- [ ] save data file to disk with apiKey prefix
-- [ ] clean saved server list of items not in client list
+- [ ] urls.yaml sync ?

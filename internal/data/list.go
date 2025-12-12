@@ -1,6 +1,12 @@
 package data
 
-import "log/slog"
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
+)
 
 type Lists struct {
 	ListIndex map[string]*List
@@ -41,7 +47,7 @@ func (ls *Lists) SyncList(list *List) (*List, error) {
 		}
 	}
 
-	return l, nil
+	return l, l.Save()
 }
 
 func (ls *Lists) findList(apiKey string) (*List, error) {
@@ -66,11 +72,42 @@ func (ls *Lists) findList(apiKey string) (*List, error) {
 }
 
 func (l *List) Save() error {
-	// write to disk with API key filename
-	return nil
+	dataFilePath, err := l.DataFilePath()
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(dataFilePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	data, err := json.Marshal(l)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(data)
+	return err
 }
 
-func LoadLists() *Lists {
+func Load() *Lists {
 	// TODO: load from disk
 	return &Lists{ListIndex: make(map[string]*List)}
+}
+
+func (l *List) DataFilePath() (string, error) {
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	appDir := filepath.Join(dir, "rssr-sync")
+	if err := os.MkdirAll(appDir, 0755); err != nil {
+		return "", err
+	}
+
+	filename := fmt.Sprintf("state-%s.json", l.ApiKey)
+	return filepath.Join(appDir, filename), nil
 }
