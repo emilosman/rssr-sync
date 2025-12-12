@@ -65,3 +65,8 @@ func (l *List) Save() error {
 	// write to disk with API key filename
 	return nil
 }
+
+func LoadLists() *Lists {
+	// TODO: load from disk
+	return &Lists{ListIndex: make(map[string]*List)}
+}

@@ -8,6 +8,6 @@ import (
 )
 
 func main() {
-	ls := &data.Lists{ListIndex: make(map[string]*data.List)}
+	ls := data.LoadLists()
 	http.ListenAndServe(":8080", web.Server(ls))
 }
