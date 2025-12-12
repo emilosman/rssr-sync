@@ -31,14 +31,14 @@ func (ls *Lists) SyncList(list *List) (*List, error) {
 	for guid, item := range list.ItemIndex {
 		if existing, ok := l.ItemIndex[guid]; ok {
 			if existing.Ts < item.Ts {
-				slog.Info("Item found, updating", "i", existing)
+				slog.Info("Update", "i", existing)
 				newItem := *item
 				l.ItemIndex[guid] = &newItem
 			} else {
-				slog.Info("Item not new, skip", "i", item)
+				slog.Info("Skip", "i", item)
 			}
 		} else {
-			slog.Info("Creating item", "i", item)
+			slog.Info("Create", "i", item)
 			l.ItemIndex[guid] = item
 		}
 	}
