@@ -1,8 +1,9 @@
 # TODO
-- [ ] concurrency race condition protection
-- [ ] testdata: data.json from rssr
-- [ ] server_test httptest
-- [ ] urls.yaml sync ?
+- [ ] Restore bookmarks feed
+- [ ] Concurrency race condition protection
+- [ ] Testdata: data.json from rssr
+- [ ] Server_test httptest
+- [ ] Urls.yaml sync ?
 
 ## Done
-- [x] save data file to disk with apiKey prefix
+- [x] Save data file to disk with apiKey prefix
