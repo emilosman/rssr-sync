@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/emilosman/rssr-sync/internal/data"
@@ -9,5 +10,6 @@ import (
 
 func main() {
 	ls := data.LoadLists()
+	fmt.Println("Server running on port 8080")
 	http.ListenAndServe(":8080", web.Server(ls))
 }
