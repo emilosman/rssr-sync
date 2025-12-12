@@ -89,6 +89,10 @@ func (l *List) Save() error {
 	}
 
 	_, err = f.Write(data)
+	if err == nil {
+		slog.Info("Save", "l", dataFilePath)
+	}
+
 	return err
 }
 
