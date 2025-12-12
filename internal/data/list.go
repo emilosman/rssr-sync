@@ -1,5 +1,7 @@
 package data
 
+import "log/slog"
+
 type Lists struct {
 	ListIndex map[string]*List
 }
@@ -29,10 +31,14 @@ func (ls *Lists) SyncList(list *List) (*List, error) {
 	for guid, item := range list.ItemIndex {
 		if existing, ok := l.ItemIndex[guid]; ok {
 			if existing.Ts < item.Ts {
+				slog.Info("Item found, updating", "i", existing)
 				newItem := *item
 				l.ItemIndex[guid] = &newItem
+			} else {
+				slog.Info("Item not new, skip", "i", item)
 			}
 		} else {
+			slog.Info("Creating item", "i", item)
 			l.ItemIndex[guid] = item
 		}
 	}
