@@ -1,4 +1,5 @@
 # TODO
+- [ ] Save only on change
 - [ ] Restore bookmarks feed
 - [ ] Concurrency race condition protection
 - [ ] Testdata: data.json from rssr
